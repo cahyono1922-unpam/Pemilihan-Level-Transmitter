@@ -1,0 +1,75 @@
+import streamlit as st
+
+# Konfigurasi Tampilan HMI Web
+st.set_page_config(
+    page_title="Level Transmitter Selection HMI",
+    page_icon="⚡",
+    layout="wide"
+)
+
+st.title("⚡ HMI Pemilihan Level Transmitter")
+st.caption("Industrial Instrument Decision Support System")
+
+st.divider()
+
+# Sidebar untuk Informasi Kunci Process
+st.sidebar.header("⚙️ Status Sistem")
+st.sidebar.success("Status Server: Online")
+st.sidebar.info("Framework: Streamlit Python")
+
+# Layout Komponen UI Utama (2 Kolom)
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    st.subheader("📋 Input Parameter Proses")
+    
+    # 1. Tombol Pilihan Tipe Tangki (Radio Horizontal)
+    tipe_tangki = st.radio(
+        "Bentuk & Status Tangki:",
+        ["Atmosferik (Terbuka)", "Bertekanan (Tertutup)"],
+        horizontal=True
+    )
+    
+    # 2. Segmented Control / Radio Sifat Fluida
+    sifat_fluida = st.segmented_control(
+        "Karakteristik Media Fluida:",
+        options=["Liquid Bersih", "Korosif / Asam", "Slurry / Lumpur", "Berbusa / Turbulensi"],
+        default="Liquid Bersih"
+    )
+    
+    # 3. Slider Parameter Operasi
+    tekanan = st.slider("Tekanan Operasi (Bar):", min_value=0.0, max_value=100.0, value=1.0, step=0.5)
+    suhu = st.slider("Suhu Operasi (°C):", min_value=-40.0, max_value=200.0, value=30.0, step=1.0)
+    
+    btn_evaluasi = st.button("🔍 Evaluasi Instrumen", type="primary", use_container_width=True)
+
+with col2:
+    st.subheader("📊 Hasil Rekomendasi & HMI Indicator")
+    
+    if btn_evaluasi:
+        st.write("**Parameter Terpilih:**")
+        st.json({
+            "Tangki": tipe_tangki,
+            "Fluida": sifat_fluida,
+            "Tekanan (Bar)": tekanan,
+            "Suhu (°C)": suhu
+        })
+        
+        st.divider()
+        st.subheader("💡 Instrumen Terpilih:")
+        
+        # Logika Evaluasi Seleksi
+        if sifat_fluida == "Slurry / Lumpur":
+            st.success("✅ **Diaphragm Seal DP Transmitter / Flush Cone Radar**")
+            st.info("Alasan: Mencegah penyumbatan impeler atau kavitasi pada port perpipaan.")
+        elif tekanan > 40.0 or suhu > 120.0:
+            st.success("✅ **Guided Wave Radar (GWR)**")
+            st.info("Alasan: Stabil untuk tekanan tinggi & fluida dengan perubahan konstanta dielektrik.")
+        elif sifat_fluida == "Korosif / Asam":
+            st.success("✅ **Non-Contact Radar (PTFE Antenna)**")
+            st.info("Alasan: Sensor tanpa kontak langsung meminimalisir korosi pada probe.")
+        else:
+            st.success("✅ **Standard Differential Pressure (DP) Level Transmitter**")
+            st.info("Alasan: Solusi ekonomis dan andal untuk kondisi standar.")
+    else:
+        st.info("Atur parameter di sebelah kiri lalu klik tombol **Evaluasi Instrumen**.")
